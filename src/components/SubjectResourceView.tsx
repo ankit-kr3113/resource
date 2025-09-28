@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { BookOpen, FileText, ExternalLink, Download, Eye, Users, Calendar, Filter, Search, Grid, List as ListIcon } from "lucide-react";
+import { useState, useEffect } from "react";
+import { BookOpen, FileText, ExternalLink, Download, Eye, Users, Calendar, Filter, Search, Grid, List as ListIcon, ChevronDown } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ResourceCard from "./ResourceCard";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface Resource {
   id: string;
@@ -587,9 +588,16 @@ const SubjectResourceView = ({ branch, semester, branchName, semesterName }: Sub
   const [filterType, setFilterType] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [openMap, setOpenMap] = useState<Record<string, boolean>>({});
 
   const subjectKey = `${branch}-${semester}` as keyof typeof subjectData;
   const subjects = subjectData[subjectKey] || {};
+
+  useEffect(() => {
+    const init: Record<string, boolean> = {};
+    Object.keys(subjects).forEach(k => { init[k] = false; });
+    setOpenMap(init);
+  }, [subjectKey]);
 
   const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
@@ -760,20 +768,27 @@ const SubjectResourceView = ({ branch, semester, branchName, semesterName }: Sub
       {/* Subjects */}
       <div className="grid gap-8">
         {filteredSubjects.map(([subjectId, subject]) => (
-          <Card id={`subject-${slugify(subjectId)}`} key={subjectId} className="border-2 hover:shadow-medium transition-shadow">
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <div className="text-2xl">{subject.icon}</div>
-                <div className="flex-1">
-                  <CardTitle className="text-xl text-primary">{subject.name}</CardTitle>
-                  <p className="text-muted-foreground text-sm mt-1">{subject.description}</p>
-                </div>
-                <Badge variant="secondary" className="bg-primary/10 text-primary">
-                  {subject.resources.length} Resources
-                </Badge>
-              </div>
+          <Collapsible key={subjectId} open={!!openMap[subjectId]} onOpenChange={(v) => setOpenMap(prev => ({ ...prev, [subjectId]: v }))}>
+            <Card id={`subject-${slugify(subjectId)}`} className="border-2 hover:shadow-medium transition-shadow">
+            <CardHeader className="py-4">
+              <CollapsibleTrigger asChild>
+                <button className="w-full">
+                  <div className="flex items-center gap-3">
+                    <div className="text-2xl">{subject.icon}</div>
+                    <div className="flex-1 text-left">
+                      <CardTitle className="text-xl text-primary">{subject.name}</CardTitle>
+                      <p className="text-muted-foreground text-sm mt-1">{subject.description}</p>
+                    </div>
+                    <Badge variant="secondary" className="bg-primary/10 text-primary">
+                      {subject.resources.length} Resources
+                    </Badge>
+                    <ChevronDown className={`w-5 h-5 text-muted-foreground transition-transform ${openMap[subjectId] ? 'rotate-180' : ''}`} />
+                  </div>
+                </button>
+              </CollapsibleTrigger>
             </CardHeader>
-            <CardContent>
+            <CollapsibleContent className="data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up overflow-hidden">
+              <CardContent>
               <Tabs defaultValue="all" className="w-full">
                 <TabsList className="grid w-full grid-cols-4">
                   <TabsTrigger value="all">All ({subject.resources.length})</TabsTrigger>
@@ -823,8 +838,10 @@ const SubjectResourceView = ({ branch, semester, branchName, semesterName }: Sub
                   </TabsContent>
                 ))}
               </Tabs>
-            </CardContent>
+              </CardContent>
+            </CollapsibleContent>
           </Card>
+          </Collapsible>
         ))}
       </div>
 
