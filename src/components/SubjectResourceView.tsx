@@ -542,7 +542,7 @@ const subjectData: Record<string, Record<string, Subject>> = {
   'cse-sem6': {
     'Artificial Intelligence': {
       name: 'Artificial Intelligence',
-      icon: '🧪',
+      icon: '��',
       description: 'Search, Knowledge Representation, Planning, NLP',
       resources: [
         { id: '146', title: 'AI Fundamentals Notes', type: 'Notes', uploader: 'AI Prof', views: 978, downloads: 423, uploadedAt: '2024-03-19' },
@@ -588,15 +588,13 @@ const SubjectResourceView = ({ branch, semester, branchName, semesterName }: Sub
   const [filterType, setFilterType] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [openMap, setOpenMap] = useState<Record<string, boolean>>({});
+  const [openId, setOpenId] = useState<string | null>(null);
 
   const subjectKey = `${branch}-${semester}` as keyof typeof subjectData;
   const subjects = subjectData[subjectKey] || {};
 
   useEffect(() => {
-    const init: Record<string, boolean> = {};
-    Object.keys(subjects).forEach(k => { init[k] = false; });
-    setOpenMap(init);
+    setOpenId(null);
   }, [subjectKey]);
 
   const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
@@ -768,7 +766,7 @@ const SubjectResourceView = ({ branch, semester, branchName, semesterName }: Sub
       {/* Subjects */}
       <div className="grid gap-8">
         {filteredSubjects.map(([subjectId, subject]) => (
-          <Collapsible key={subjectId} open={!!openMap[subjectId]} onOpenChange={(v) => setOpenMap(prev => ({ ...prev, [subjectId]: v }))}>
+          <Collapsible key={subjectId} open={openId === subjectId} onOpenChange={(v) => setOpenId(v ? subjectId : null)}>
             <Card id={`subject-${slugify(subjectId)}`} className="border-2 hover:shadow-medium transition-shadow">
             <CardHeader className="py-4">
               <CollapsibleTrigger asChild>
@@ -782,7 +780,7 @@ const SubjectResourceView = ({ branch, semester, branchName, semesterName }: Sub
                     <Badge variant="secondary" className="bg-primary/10 text-primary">
                       {subject.resources.length} Resources
                     </Badge>
-                    <ChevronDown className={`w-5 h-5 text-muted-foreground transition-transform ${openMap[subjectId] ? 'rotate-180' : ''}`} />
+                    <ChevronDown className={`w-5 h-5 text-muted-foreground transition-transform ${openId === subjectId ? 'rotate-180' : ''}`} />
                   </div>
                 </button>
               </CollapsibleTrigger>
