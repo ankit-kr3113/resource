@@ -1,11 +1,13 @@
-import { useState } from "react";
-import { BookOpen, FileText, ExternalLink, Download, Eye, Users, Calendar, Filter, Search } from "lucide-react";
+import { useState, useEffect } from "react";
+import { BookOpen, FileText, ExternalLink, Download, Eye, Users, Calendar, Filter, Search, Grid, List as ListIcon, ChevronDown } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import ResourceCard from "./ResourceCard";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface Resource {
   id: string;
@@ -262,7 +264,7 @@ const subjectData: Record<string, Record<string, Subject>> = {
     },
     'Physics': {
       name: 'Physics',
-      icon: '���',
+      icon: '⚡',
       description: 'Electromagnetic Theory, Optics, Modern Physics',
       resources: [
         { id: '67', title: 'Physics for Electronics', type: 'Notes', uploader: 'Physics ECE', views: 845, downloads: 367, uploadedAt: '2024-03-14' },
@@ -540,7 +542,7 @@ const subjectData: Record<string, Record<string, Subject>> = {
   'cse-sem6': {
     'Artificial Intelligence': {
       name: 'Artificial Intelligence',
-      icon: '🧪',
+      icon: '��',
       description: 'Search, Knowledge Representation, Planning, NLP',
       resources: [
         { id: '146', title: 'AI Fundamentals Notes', type: 'Notes', uploader: 'AI Prof', views: 978, downloads: 423, uploadedAt: '2024-03-19' },
@@ -585,9 +587,15 @@ const SubjectResourceView = ({ branch, semester, branchName, semesterName }: Sub
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [openId, setOpenId] = useState<string | null>(null);
 
   const subjectKey = `${branch}-${semester}` as keyof typeof subjectData;
   const subjects = subjectData[subjectKey] || {};
+
+  useEffect(() => {
+    setOpenId(null);
+  }, [subjectKey]);
 
   const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
@@ -645,16 +653,35 @@ const SubjectResourceView = ({ branch, semester, branchName, semesterName }: Sub
     console.log('Download resource:', resourceId);
   };
 
+  const mapToResourceCardData = (r: Resource, subjectName: string) => ({
+    id: r.id,
+    title: r.title,
+    description: `${subjectName} • ${r.type}`,
+    branch: branchName,
+    year: semesterName,
+    category: r.type === 'PYQ' ? 'Previous Year Questions' : (r.type === 'External Link' ? 'External Links' : 'Notes'),
+    tags: [subjectName, r.type],
+    uploader: r.uploader,
+    uploadedAt: r.uploadedAt,
+    type: r.type === 'External Link' ? 'link' as const : 'file' as const,
+    views: r.views,
+    downloads: r.downloads,
+  });
+
   return (
     <div className="space-y-8">
       {/* Header */}
       <div className="text-center">
         <h2 className="text-3xl font-bold mb-2">{branchName}</h2>
         <p className="text-muted-foreground">
-          {semesterName} • {Object.keys(subjects).length} Subjects • Resources organized by subjects
+          {semesterName} • {Object.keys(subjects).length} Subjects • {totalResources} Resources
         </p>
+        <div className="flex items-center justify-center gap-2 mt-3">
+          <Badge variant="secondary" className="bg-blue-100 text-blue-800 border border-blue-200">Notes: {notesCount}</Badge>
+          <Badge variant="secondary" className="bg-green-100 text-green-800 border border-green-200">PYQ: {pyqCount}</Badge>
+          <Badge variant="secondary" className="bg-purple-100 text-purple-800 border border-purple-200">Links: {linkCount}</Badge>
+        </div>
       </div>
-
 
       {/* Quick Subject Nav */}
       {Object.keys(subjects).length > 0 && (
@@ -675,64 +702,91 @@ const SubjectResourceView = ({ branch, semester, branchName, semesterName }: Sub
       {/* Search and Filters */}
       <Card className="border-2 sticky top-4 z-10 bg-card/80 backdrop-blur supports-[backdrop-filter]:bg-card/60">
         <CardContent className="p-6">
-          <div className="flex flex-col md:flex-row gap-4 items-center">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="sample"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col md:flex-row gap-4 items-center">
+              <div className="relative flex-1 w-full">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search subjects or resources"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <div className="flex gap-3 w-full md:w-auto">
+                <Select value={filterType} onValueChange={setFilterType}>
+                  <SelectTrigger className="w-44">
+                    <Filter className="w-4 h-4 mr-2" />
+                    <SelectValue placeholder="All Types" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Types</SelectItem>
+                    <SelectItem value="Notes">Notes</SelectItem>
+                    <SelectItem value="PYQ">Previous Papers</SelectItem>
+                    <SelectItem value="External Link">External Links</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger className="w-44">
+                    <SelectValue placeholder="Newest First" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="newest">Newest First</SelectItem>
+                    <SelectItem value="popular">Most Popular</SelectItem>
+                    <SelectItem value="downloads">Most Downloaded</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            
-            <div className="flex gap-3">
-              <Select value={filterType} onValueChange={setFilterType}>
-                <SelectTrigger className="w-40">
-                  <Filter className="w-4 h-4 mr-2" />
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="Notes">Notes</SelectItem>
-                  <SelectItem value="PYQ">Previous Papers</SelectItem>
-                  <SelectItem value="External Link">External Links</SelectItem>
-                </SelectContent>
-              </Select>
-              
-              <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-40">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="newest">Newest First</SelectItem>
-                  <SelectItem value="popular">Most Popular</SelectItem>
-                  <SelectItem value="downloads">Most Downloaded</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Showing {totalResources} total resources</span>
+              <div className="flex items-center bg-muted rounded-lg p-1">
+                <Button
+                  variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('grid')}
+                  className="px-3"
+                >
+                  <Grid className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant={viewMode === 'list' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('list')}
+                  className="px-3"
+                >
+                  <ListIcon className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Subjects Grid */}
+      {/* Subjects */}
       <div className="grid gap-8">
         {filteredSubjects.map(([subjectId, subject]) => (
-          <Card id={`subject-${slugify(subjectId)}`} key={subjectId} className="border-2 hover:shadow-medium transition-shadow">
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <div className="text-2xl">{subject.icon}</div>
-                <div className="flex-1">
-                  <CardTitle className="text-xl text-primary">{subject.name}</CardTitle>
-                  <p className="text-muted-foreground text-sm mt-1">{subject.description}</p>
-                </div>
-                <Badge variant="secondary" className="bg-primary/10 text-primary">
-                  {subject.resources.length} Resources
-                </Badge>
-              </div>
+          <Collapsible key={subjectId} open={openId === subjectId} onOpenChange={(v) => setOpenId(v ? subjectId : null)}>
+            <Card id={`subject-${slugify(subjectId)}`} className="border-2 hover:shadow-medium transition-shadow">
+            <CardHeader className="py-4">
+              <CollapsibleTrigger asChild>
+                <button className="w-full">
+                  <div className="flex items-center gap-3">
+                    <div className="text-2xl">{subject.icon}</div>
+                    <div className="flex-1 text-left">
+                      <CardTitle className="text-xl text-primary">{subject.name}</CardTitle>
+                      <p className="text-muted-foreground text-sm mt-1">{subject.description}</p>
+                    </div>
+                    <Badge variant="secondary" className="bg-primary/10 text-primary">
+                      {subject.resources.length} Resources
+                    </Badge>
+                    <ChevronDown className={`w-5 h-5 text-muted-foreground transition-transform ${openId === subjectId ? 'rotate-180' : ''}`} />
+                  </div>
+                </button>
+              </CollapsibleTrigger>
             </CardHeader>
-            
-            <CardContent>
+            <CollapsibleContent className="data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up overflow-hidden">
+              <CardContent>
               <Tabs defaultValue="all" className="w-full">
                 <TabsList className="grid w-full grid-cols-4">
                   <TabsTrigger value="all">All ({subject.resources.length})</TabsTrigger>
@@ -740,87 +794,52 @@ const SubjectResourceView = ({ branch, semester, branchName, semesterName }: Sub
                   <TabsTrigger value="PYQ">PYQs ({subject.resources.filter(r => r.type === 'PYQ').length})</TabsTrigger>
                   <TabsTrigger value="External Link">Links ({subject.resources.filter(r => r.type === 'External Link').length})</TabsTrigger>
                 </TabsList>
-                
+
                 {['all', 'Notes', 'PYQ', 'External Link'].map((tabType) => (
                   <TabsContent key={tabType} value={tabType} className="mt-6">
-                    <div className="grid gap-4">
-                      {subject.resources
-                        .filter(resource => tabType === 'all' || resource.type === tabType)
-                        .filter(resource => filterType === 'all' || resource.type === filterType)
-                        .slice()
-                        .sort((a, b) => {
-                          switch (sortBy) {
-                            case 'popular':
-                              return b.views - a.views;
-                            case 'downloads':
-                              return b.downloads - a.downloads;
-                            case 'newest':
-                            default:
-                              return +new Date(b.uploadedAt) - +new Date(a.uploadedAt);
-                          }
-                        })
-                        .map((resource) => (
-                          <div key={resource.id} className="border rounded-lg p-4 hover:bg-muted/30 transition-colors">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3 flex-1">
-                                <div className="p-2 bg-muted rounded-lg">
-                                  {getResourceIcon(resource.type)}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <h4 className="font-semibold text-foreground truncate">{resource.title}</h4>
-                                  <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
-                                    <span className="flex items-center gap-1">
-                                      <Users className="w-3 h-3" />
-                                      {resource.uploader}
-                                    </span>
-                                    <span className="flex items-center gap-1">
-                                      <Eye className="w-3 h-3" />
-                                      {resource.views}
-                                    </span>
-                                    <span className="flex items-center gap-1">
-                                      <Download className="w-3 h-3" />
-                                      {resource.downloads}
-                                    </span>
-                                    <span className="flex items-center gap-1">
-                                      <Calendar className="w-3 h-3" />
-                                      {new Date(resource.uploadedAt).toLocaleDateString()}
-                                    </span>
-                                  </div>
-                                </div>
-                                <Badge className={`${getResourceBadgeColor(resource.type)} border`}>
-                                  {resource.type}
-                                </Badge>
-                              </div>
-                              
-                              <div className="flex items-center gap-2 ml-4">
-                                <Button 
-                                  variant="outline" 
-                                  size="sm"
-                                  onClick={() => handlePreview(resource.id)}
-                                  className="hover:bg-primary hover:text-primary-foreground"
-                                >
-                                  <Eye className="w-4 h-4 mr-1" />
-                                  Preview
-                                </Button>
-                                <Button 
-                                  variant="default" 
-                                  size="sm"
-                                  onClick={() => handleDownload(resource.id)}
-                                  className="bg-primary hover:bg-primary/90"
-                                >
-                                  <Download className="w-4 h-4 mr-1" />
-                                  {resource.type === 'External Link' ? 'Visit' : 'Download'}
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
+                    <div className={
+                      viewMode === 'grid'
+                        ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6'
+                        : 'space-y-4'
+                    }>
+                      {sortResources(
+                        subject.resources
+                          .filter(resource => (tabType === 'all' || resource.type === tabType))
+                          .filter(resource => (filterType === 'all' || resource.type === filterType))
+                          .filter(resource => (
+                            searchTerm.trim() === '' ||
+                            resource.title.toLowerCase().includes(searchTerm.toLowerCase())
+                          ))
+                      ).map((resource) => (
+                        <ResourceCard
+                          key={resource.id}
+                          resource={mapToResourceCardData(resource, subject.name)}
+                          onPreview={handlePreview}
+                          onDownload={handleDownload}
+                          viewMode={viewMode}
+                        />
+                      ))}
                     </div>
+
+                    {/* In list view with no items, still show empty state spacing */}
+                    {sortResources(
+                      subject.resources
+                        .filter(resource => (tabType === 'all' || resource.type === tabType))
+                        .filter(resource => (filterType === 'all' || resource.type === filterType))
+                        .filter(resource => (
+                          searchTerm.trim() === '' ||
+                          resource.title.toLowerCase().includes(searchTerm.toLowerCase())
+                        ))
+                    ).length === 0 && (
+                      <div className="text-center text-sm text-muted-foreground py-6">No resources match the current filters.</div>
+                    )}
                   </TabsContent>
                 ))}
               </Tabs>
-            </CardContent>
+              </CardContent>
+            </CollapsibleContent>
           </Card>
+          </Collapsible>
         ))}
       </div>
 
