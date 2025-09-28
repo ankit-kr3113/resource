@@ -38,89 +38,94 @@ const Header = () => {
       }`}
     >
       <div className="container mx-auto px-4 py-3">
+        {/* Brand Row */}
         <div className="flex items-center justify-between gap-4">
-          {/* Brand */}
           <Link to="/" className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center shadow-soft">
+            <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center shadow-soft">
               <BookOpen className="w-6 h-6 text-secondary-foreground" />
             </div>
             <div className="leading-tight">
               <div className="text-lg font-bold text-foreground tracking-tight">Resource Hub</div>
-              <div className="text-xs text-muted-foreground">Academic resources for NIT students</div>
+              <div className="text-xs text-muted-foreground">Your Academic Resource Platform</div>
             </div>
           </Link>
-
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-1">
-            {nav.map((item) => (
-              <Link
-                key={item.to}
-                to={item.to}
-                className={`px-3 py-2 rounded-md text-sm transition-smooth hover:bg-accent hover:text-accent-foreground ${
-                  isActive(item.to) ? "text-primary bg-primary/10" : "text-foreground/80"
-                }`}
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-
-          {/* Actions */}
-          <div className="flex items-center gap-2">
-            <Button variant="secondary" size="sm" className="hidden md:inline-flex h-9 px-3" asChild>
-              <Link to="/submit">
-                <Upload className="w-4 h-4 mr-2" />
-                Submit
-              </Link>
-            </Button>
-            <Button variant="ghost" size="sm" className="hidden md:inline-flex h-9 px-3" asChild>
-              <Link to="#">
-                <User className="w-4 h-4 mr-2" />
-                Sign In
-              </Link>
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="md:hidden"
-              aria-label="Toggle menu"
-              onClick={() => setIsMenuOpen((v) => !v)}
-            >
-              <Menu className="w-5 h-5" />
-            </Button>
-          </div>
         </div>
 
-        {/* Mobile Menu */}
-        {isMenuOpen && (
-          <div className="md:hidden mt-3 border-t border-border pt-3 space-y-2">
-            <div className="flex flex-col">
+        {/* Maroon Nav Bar */}
+        <div className="mt-3 bg-primary rounded-xl shadow-medium">
+          <div className="flex items-center justify-between gap-2 px-2 md:px-3 py-2">
+            {/* Desktop Nav Links */}
+            <nav className="hidden md:flex items-center gap-1">
               {nav.map((item) => (
                 <Link
                   key={item.to}
                   to={item.to}
-                  className={`px-2.5 py-2 rounded-md text-sm transition-smooth ${
-                    isActive(item.to) ? "text-primary bg-primary/10" : "text-foreground/80 hover:bg-accent"
+                  className={`px-3 py-2 rounded-md text-sm transition-smooth text-primary-foreground hover:bg-primary/60 ${
+                    isActive(item.to) ? "bg-primary/70" : ""
                   }`}
                 >
                   {item.label}
                 </Link>
               ))}
-            </div>
-            <div className="flex items-center gap-2 pt-1">
-              <Button variant="secondary" className="flex-1" asChild>
+            </nav>
+
+            {/* Mobile burger */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden text-primary-foreground"
+              aria-label="Toggle menu"
+              onClick={() => setIsMenuOpen((v) => !v)}
+            >
+              <Menu className="w-5 h-5" />
+            </Button>
+
+            {/* Right Actions */}
+            <div className="hidden md:flex items-center gap-2">
+              <Button variant="secondary" size="sm" className="h-8 px-3" asChild>
                 <Link to="/submit">
                   <Upload className="w-4 h-4 mr-2" /> Submit
                 </Link>
               </Button>
-              <Button variant="outline" className="flex-1" asChild>
+              <Button variant="secondary" size="sm" className="h-8 px-3" asChild>
                 <Link to="#">
                   <User className="w-4 h-4 mr-2" /> Sign In
                 </Link>
               </Button>
             </div>
           </div>
-        )}
+
+          {/* Mobile Menu inside maroon bar */}
+          {isMenuOpen && (
+            <div className="md:hidden border-t border-primary-hover/50 px-2 py-3 space-y-2">
+              <div className="flex flex-col">
+                {nav.map((item) => (
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    className={`px-2.5 py-2 rounded-md text-sm transition-smooth text-primary-foreground/95 ${
+                      isActive(item.to) ? "bg-primary/70" : "hover:bg-primary/60"
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+              <div className="grid grid-cols-2 gap-2 pt-1">
+                <Button variant="secondary" className="w-full h-9" asChild>
+                  <Link to="/submit">
+                    <Upload className="w-4 h-4 mr-2" /> Submit
+                  </Link>
+                </Button>
+                <Button variant="secondary" className="w-full h-9" asChild>
+                  <Link to="#">
+                    <User className="w-4 h-4 mr-2" /> Sign In
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );
