@@ -1,21 +1,9 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, BookOpen, FileText, ExternalLink, Users, Monitor, TrendingUp, Wrench, GraduationCap, ShieldCheck, Sparkles } from "lucide-react";
+import { BookOpen, FileText, ExternalLink, Users, Monitor, TrendingUp, Wrench, GraduationCap, ShieldCheck, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 
 const HeroSection = () => {
   const navigate = useNavigate();
-  const [query, setQuery] = useState("");
-
-  const runSearch = () => {
-    const q = query.trim();
-    if (q.length > 0) {
-      navigate(`/browse?query=${encodeURIComponent(q)}`);
-    } else {
-      navigate("/browse");
-    }
-  };
 
   return (
     <section className="gradient-subtle py-20">
@@ -34,24 +22,6 @@ const HeroSection = () => {
           <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
             Discover notes, previous year questions, lab manuals, and curated links. Organized by branch, year, and subject—contributed by students for students.
           </p>
-
-          {/* Search Bar */}
-          <div className="max-w-2xl mx-auto mb-6">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-              <Input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && runSearch()}
-                placeholder="Search notes, PYQs, topics or subjects"
-                aria-label="Search resources"
-                className="pl-12 pr-28 py-5 text-base md:text-lg border-2 focus:border-primary shadow-soft"
-              />
-              <Button onClick={runSearch} className="absolute right-2 top-1/2 -translate-y-1/2 px-6 h-10">
-                Search
-              </Button>
-            </div>
-          </div>
 
           {/* Primary CTAs */}
           <div className="flex items-center justify-center gap-3 md:gap-4 mb-12">
