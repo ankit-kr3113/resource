@@ -38,7 +38,7 @@ const Header = () => {
       }`}
     >
       <div className="container mx-auto px-4 py-3">
-        {/* Brand Row */}
+        {/* Brand Row with actions above nav bar */}
         <div className="flex items-center justify-between gap-4">
           <Link to="/" className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center shadow-soft">
@@ -49,6 +49,19 @@ const Header = () => {
               <div className="text-xs text-muted-foreground">Your Academic Resource Platform</div>
             </div>
           </Link>
+
+          <div className="flex items-center gap-2">
+            <Button variant="secondary" size="sm" className="h-8 px-3" asChild>
+              <Link to="/submit">
+                <Upload className="w-4 h-4 mr-2" /> Submit
+              </Link>
+            </Button>
+            <Button variant="secondary" size="sm" className="h-8 px-3" asChild>
+              <Link to="#">
+                <User className="w-4 h-4 mr-2" /> Sign In
+              </Link>
+            </Button>
+          </div>
         </div>
 
         {/* Maroon Nav Bar */}
@@ -69,7 +82,7 @@ const Header = () => {
               ))}
             </nav>
 
-            {/* Mobile burger */}
+            {/* Mobile burger only (actions are above bar) */}
             <Button
               variant="ghost"
               size="icon"
@@ -79,20 +92,6 @@ const Header = () => {
             >
               <Menu className="w-5 h-5" />
             </Button>
-
-            {/* Right Actions */}
-            <div className="hidden md:flex items-center gap-2">
-              <Button variant="secondary" size="sm" className="h-8 px-3" asChild>
-                <Link to="/submit">
-                  <Upload className="w-4 h-4 mr-2" /> Submit
-                </Link>
-              </Button>
-              <Button variant="secondary" size="sm" className="h-8 px-3" asChild>
-                <Link to="#">
-                  <User className="w-4 h-4 mr-2" /> Sign In
-                </Link>
-              </Button>
-            </div>
           </div>
 
           {/* Mobile Menu inside maroon bar */}
@@ -110,18 +109,6 @@ const Header = () => {
                     {item.label}
                   </Link>
                 ))}
-              </div>
-              <div className="grid grid-cols-2 gap-2 pt-1">
-                <Button variant="secondary" className="w-full h-9" asChild>
-                  <Link to="/submit">
-                    <Upload className="w-4 h-4 mr-2" /> Submit
-                  </Link>
-                </Button>
-                <Button variant="secondary" className="w-full h-9" asChild>
-                  <Link to="#">
-                    <User className="w-4 h-4 mr-2" /> Sign In
-                  </Link>
-                </Button>
               </div>
             </div>
           )}
