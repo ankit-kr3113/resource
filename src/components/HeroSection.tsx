@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { BookOpen, FileText, ExternalLink, Users, Monitor, TrendingUp, Wrench, GraduationCap, ShieldCheck, Sparkles } from "lucide-react";
+import { BookOpen, FileText, ExternalLink, Users, GraduationCap, ShieldCheck, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const HeroSection = () => {
@@ -72,31 +72,6 @@ const HeroSection = () => {
               </div>
               <div className="text-2xl font-bold text-foreground mb-1">200+</div>
               <div className="text-sm text-muted-foreground">Contributors</div>
-            </div>
-          </div>
-
-          {/* Browse Categories */}
-          <div className="text-center mt-12">
-            <h2 className="text-base font-semibold text-foreground mb-4">Browse by Category</h2>
-            <div className="flex flex-wrap justify-center gap-3">
-              <Button variant="outline" onClick={() => navigate("/browse?category=notes")} className="hover:bg-primary hover:text-primary-foreground">
-                <BookOpen className="w-4 h-4 mr-2" />Notes
-              </Button>
-              <Button variant="outline" onClick={() => navigate("/browse?category=pyq")} className="hover:bg-primary hover:text-primary-foreground">
-                <FileText className="w-4 h-4 mr-2" />Previous Year Questions
-              </Button>
-              <Button variant="outline" onClick={() => navigate("/browse?category=links")} className="hover:bg-primary hover:text-primary-foreground">
-                <ExternalLink className="w-4 h-4 mr-2" />External Links
-              </Button>
-              <Button variant="outline" onClick={() => navigate("/browse?branch=cse")} className="hover:bg-primary hover:text-primary-foreground">
-                <Monitor className="w-4 h-4 mr-2" />Computer Science
-              </Button>
-              <Button variant="outline" onClick={() => navigate("/browse?branch=eee")} className="hover:bg-primary hover:text-primary-foreground">
-                <TrendingUp className="w-4 h-4 mr-2" />Electrical Engineering
-              </Button>
-              <Button variant="outline" onClick={() => navigate("/browse?branch=me")} className="hover:bg-primary hover:text-primary-foreground">
-                <Wrench className="w-4 h-4 mr-2" />Mechanical Engineering
-              </Button>
             </div>
           </div>
         </div>
