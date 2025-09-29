@@ -151,7 +151,7 @@ const Browse = () => {
                 <div className="flex items-center gap-2 mt-3">
                   <Badge className="bg-blue-100 text-blue-800 border border-blue-200">Notes: {notesHeader}</Badge>
                   <Badge className="bg-green-100 text-green-800 border border-green-200">PYQ: {pyqHeader}</Badge>
-                  <Badge className="bg-purple-100 text-purple-800 border border-purple-200">Links: {linksHeader}</Badge>
+                  <Badge className="bg-purple-100 text-purple-800 border border-purple-200">Other Resources: {linksHeader}</Badge>
                 </div>
               )}
             </div>
