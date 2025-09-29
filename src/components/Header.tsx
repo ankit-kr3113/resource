@@ -3,8 +3,9 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { BookOpen, Menu, Upload, User } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { getCurrentUser, signIn, signOut } from "@/lib/auth";
+import { getCurrentUser, signOut } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
+import GoogleAuthModal from "@/components/auth/GoogleAuthModal";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
