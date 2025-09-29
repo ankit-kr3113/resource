@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { useSearchParams, Link as RouterLink, useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -10,8 +10,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Calendar, Crown, Download, LogOut, Pencil, Shield, ShieldCheck, ShieldQuestion, Star, Upload, User } from "lucide-react";
+import { Calendar, Crown, Download, LogOut, Pencil, Shield, ShieldCheck, ShieldQuestion, Star, Upload, User, ThumbsUp, ThumbsDown } from "lucide-react";
 import { signOut, getCurrentUser } from "@/lib/auth";
+import { toast } from "@/components/ui/sonner";
 
 // Types
  type Role = "viewer" | "contributor" | "admin" | "super-admin";
@@ -140,12 +141,28 @@ import { signOut, getCurrentUser } from "@/lib/auth";
     localStorage.removeItem(prefKey);
   };
 
-  const submissionsAll: SubmissionItem[] = useMemo(() => {
+  const [submissionsAll, setSubmissionsAll] = useState<SubmissionItem[]>([]);
+
+  const loadSubmissions = useCallback(() => {
     const raw = localStorage.getItem("submissions");
     const arr: SubmissionItem[] = raw ? JSON.parse(raw) : [];
-    // Ensure sorting by date desc
-    return arr.slice().sort((a, b) => +new Date(b.date) - +new Date(a.date));
+    const sorted = arr.slice().sort((a, b) => +new Date(b.date) - +new Date(a.date));
+    setSubmissionsAll(sorted);
   }, []);
+
+  useEffect(() => {
+    loadSubmissions();
+  }, [loadSubmissions]);
+
+  useEffect(() => {
+    const handler = () => loadSubmissions();
+    window.addEventListener("submissions:changed", handler);
+    window.addEventListener("storage", handler);
+    return () => {
+      window.removeEventListener("submissions:changed", handler);
+      window.removeEventListener("storage", handler);
+    };
+  }, [loadSubmissions]);
 
   const mySubmissions = useMemo(() => submissionsAll.filter(s => !email || s.uploaderEmail === email), [submissionsAll, email]);
 
@@ -170,6 +187,8 @@ import { signOut, getCurrentUser } from "@/lib/auth";
     if (idx >= 0 && arr[idx].status === "Pending") {
       arr[idx] = { ...arr[idx], ...editDraft };
       localStorage.setItem("submissions", JSON.stringify(arr));
+      window.dispatchEvent(new Event("submissions:changed"));
+      toast.success("Submission updated");
     }
     setEditId(null);
     setEditDraft(null);
@@ -183,6 +202,30 @@ import { signOut, getCurrentUser } from "@/lib/auth";
   const showContrib = role === "contributor" || role === "admin" || role === "super-admin";
   const showAdmin = role === "admin" || role === "super-admin";
   const showSuper = role === "super-admin";
+
+  const approveSubmission = (id: string) => {
+    const raw = localStorage.getItem("submissions");
+    const arr: SubmissionItem[] = raw ? JSON.parse(raw) : [];
+    const idx = arr.findIndex(s => s.id === id);
+    if (idx >= 0) {
+      arr[idx] = { ...arr[idx], status: "Approved" };
+      localStorage.setItem("submissions", JSON.stringify(arr));
+      window.dispatchEvent(new Event("submissions:changed"));
+      toast.success("Submission approved");
+    }
+  };
+
+  const rejectSubmission = (id: string) => {
+    const raw = localStorage.getItem("submissions");
+    const arr: SubmissionItem[] = raw ? JSON.parse(raw) : [];
+    const idx = arr.findIndex(s => s.id === id);
+    if (idx >= 0) {
+      arr[idx] = { ...arr[idx], status: "Rejected" };
+      localStorage.setItem("submissions", JSON.stringify(arr));
+      window.dispatchEvent(new Event("submissions:changed"));
+      toast.success("Submission rejected");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -436,6 +479,53 @@ import { signOut, getCurrentUser } from "@/lib/auth";
                     <CardContent className="flex flex-wrap gap-2">
                       <Button asChild><RouterLink to="/browse"><Shield className="w-4 h-4 mr-2"/>Pending Queue</RouterLink></Button>
                       <Button variant="secondary" asChild><RouterLink to="/browse"><ShieldCheck className="w-4 h-4 mr-2"/>Resource Management</RouterLink></Button>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base">Pending Submissions</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {submissionsAll.filter(s => s.status === 'Pending').length === 0 ? (
+                        <div className="text-sm text-muted-foreground">No pending submissions.</div>
+                      ) : (
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Title</TableHead>
+                              <TableHead>Branch</TableHead>
+                              <TableHead>Year</TableHead>
+                              <TableHead>Category</TableHead>
+                              <TableHead>Uploader</TableHead>
+                              <TableHead>Date</TableHead>
+                              <TableHead className="text-right">Actions</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {submissionsAll.filter(s => s.status === 'Pending').map(s => (
+                              <TableRow key={s.id}>
+                                <TableCell className="font-medium">{s.title}</TableCell>
+                                <TableCell>{s.branch}</TableCell>
+                                <TableCell>{s.year}</TableCell>
+                                <TableCell>{s.category}</TableCell>
+                                <TableCell className="truncate max-w-[160px]">{s.uploaderEmail || 'Unknown'}</TableCell>
+                                <TableCell>{new Date(s.date).toLocaleDateString()}</TableCell>
+                                <TableCell className="text-right">
+                                  <div className="flex items-center justify-end gap-2">
+                                    <Button size="sm" onClick={() => approveSubmission(s.id)}>
+                                      <ThumbsUp className="w-4 h-4 mr-1"/>Approve
+                                    </Button>
+                                    <Button variant="destructive" size="sm" onClick={() => rejectSubmission(s.id)}>
+                                      <ThumbsDown className="w-4 h-4 mr-1"/>Reject
+                                    </Button>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      )}
                     </CardContent>
                   </Card>
 
