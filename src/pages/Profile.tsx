@@ -481,12 +481,16 @@ const CATEGORIES = ["Notes", "PYQ", "Other"] as const;
                       <CardTitle className="text-base">Admin Shortcuts</CardTitle>
                     </CardHeader>
                     <CardContent className="flex flex-wrap gap-2">
-                      <Button asChild><RouterLink to="/browse"><Shield className="w-4 h-4 mr-2"/>Pending Queue</RouterLink></Button>
-                      <Button variant="secondary" asChild><RouterLink to="/browse"><ShieldCheck className="w-4 h-4 mr-2"/>Resource Management</RouterLink></Button>
+                      <Button onClick={() => document.getElementById('pending-queue')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>
+                        <Shield className="w-4 h-4 mr-2"/>Pending Queue
+                      </Button>
+                      <Button variant="secondary" onClick={() => document.getElementById('admin-analytics')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>
+                        <ShieldCheck className="w-4 h-4 mr-2"/>Resource Management
+                      </Button>
                     </CardContent>
                   </Card>
 
-                  <Card>
+                  <Card id="pending-queue">
                     <CardHeader className="pb-3">
                       <CardTitle className="text-base">Pending Submissions</CardTitle>
                     </CardHeader>
@@ -534,7 +538,7 @@ const CATEGORIES = ["Notes", "PYQ", "Other"] as const;
                   </Card>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <Card>
+                    <Card id="admin-analytics">
                       <CardHeader className="pb-3">
                         <CardTitle className="text-base">Analytics Snapshot</CardTitle>
                       </CardHeader>
