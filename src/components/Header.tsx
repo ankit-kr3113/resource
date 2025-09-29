@@ -3,8 +3,9 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { BookOpen, Menu, Upload, User } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { getCurrentUser, signIn, signOut } from "@/lib/auth";
+import { getCurrentUser, signOut } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
+import GoogleAuthModal from "@/components/auth/GoogleAuthModal";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -12,6 +13,7 @@ const Header = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [authOpen, setAuthOpen] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 4);
@@ -92,20 +94,9 @@ const Header = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="secondary" size="sm" className="h-8 px-3">
-                    <User className="w-4 h-4 mr-2" /> Sign In
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>Sign in as</DropdownMenuLabel>
-                  <DropdownMenuItem onClick={() => { signIn('viewer'); navigate('/profile'); }}>Viewer</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => { signIn('contributor'); navigate('/profile'); }}>Contributor</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => { signIn('admin'); navigate('/profile'); }}>Admin</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => { signIn('superAdmin'); navigate('/profile'); }}>Super-admin</DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <Button variant="secondary" size="sm" className="h-8 px-3" onClick={() => { setIsMenuOpen(false); setAuthOpen(true); }} aria-haspopup="dialog" aria-expanded={authOpen} id="open-google-auth">
+                <User className="w-4 h-4 mr-2" /> Sign In
+              </Button>
             )}
           </div>
         </div>
@@ -160,6 +151,7 @@ const Header = () => {
           )}
         </div>
       </div>
+      <GoogleAuthModal open={authOpen} onOpenChange={setAuthOpen} onSignedIn={() => navigate('/profile')} />
     </header>
   );
 };

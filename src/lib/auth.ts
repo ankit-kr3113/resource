@@ -3,6 +3,8 @@ import { toast } from "@/components/ui/sonner";
 export type roleKey = 'viewer' | 'contributor' | 'admin' | 'superAdmin';
 export type Role = 'viewer' | 'contributor' | 'admin' | 'super-admin';
 
+type BasicUser = { name: string; email: string; photoUrl: string; role: Role };
+
 const HARD_USERS = {
   viewer: {
     user: { name: "Aarav Singh", email: "aarav.singh@example.com", photoUrl: "https://i.pravatar.cc/100?img=12", role: "viewer" as Role },
@@ -67,16 +69,33 @@ const seedForRole = (key: roleKey) => {
   localStorage.setItem(`profile:prefs:${email}`, JSON.stringify(d.preferences || {}));
   localStorage.setItem(`profile:stats:${email}`, JSON.stringify(d.stats || { visits: 0, downloads: 0, contributions: 0 }));
 
-  if (key === 'contributor' && d.submissions) {
-    mergeSubmissions(d.submissions);
+  if (key === 'contributor' && (d as any).submissions) {
+    mergeSubmissions((d as any).submissions);
   }
   if (key === 'admin') {
     const seed: any[] = [
-      ...(d.moderation?.recentApproved || []).map((r: any) => ({ id: r.id, title: r.title, branch: 'Mechanical', year: '3rd Year', category: 'Notes', status: 'Approved', date: r.date, uploaderEmail: 'unknown@college.edu' })),
-      ...Array.from({ length: d.moderation?.pendingCount || 0 }).map((_, i) => ({ id: `seed_pending_${i+1}`, title: `Pending Submission #${i+1}`, branch: 'Mechanical', year: '3rd Year', category: 'PYQ', status: 'Pending', date: new Date().toISOString(), uploaderEmail: 'someone@college.edu' })),
+      ...((d as any).moderation?.recentApproved || []).map((r: any) => ({ id: r.id, title: r.title, branch: 'Mechanical', year: '3rd Year', category: 'Notes', status: 'Approved', date: r.date, uploaderEmail: 'unknown@college.edu' })),
+      ...Array.from({ length: (d as any).moderation?.pendingCount || 0 }).map((_, i) => ({ id: `seed_pending_${i+1}`, title: `Pending Submission #${i+1}`, branch: 'Mechanical', year: '3rd Year', category: 'PYQ', status: 'Pending', date: new Date().toISOString(), uploaderEmail: 'someone@college.edu' })),
     ];
     mergeSubmissions(seed);
   }
+};
+
+const customUsersKey = 'users:custom';
+const getCustomUsers = (): BasicUser[] => {
+  const raw = localStorage.getItem(customUsersKey);
+  return raw ? JSON.parse(raw) : [];
+};
+const saveCustomUsers = (users: BasicUser[]) => {
+  localStorage.setItem(customUsersKey, JSON.stringify(users));
+};
+
+const findHardUserByEmail = (email: string): { key: roleKey; user: BasicUser } | null => {
+  const entries = Object.entries(HARD_USERS) as [roleKey, any][];
+  for (const [key, data] of entries) {
+    if (data.user.email.toLowerCase() === email.toLowerCase()) return { key, user: data.user };
+  }
+  return null;
 };
 
 export const signIn = (key: roleKey) => {
@@ -90,6 +109,58 @@ export const signOut = () => {
   localStorage.removeItem('currentUser');
   window.dispatchEvent(new Event('auth:changed'));
   toast.success('Signed out');
+};
+
+export const signInWithGoogleDefault = () => {
+  // Test account for demo "Continue with Google"
+  signIn('viewer');
+};
+
+export const signInWithGoogleEmail = (email: string): { ok: true } | { ok: false; reason: 'not_found' } => {
+  const hard = findHardUserByEmail(email);
+  if (hard) {
+    signIn(hard.key);
+    return { ok: true };
+  }
+  const custom = getCustomUsers().find(u => u.email.toLowerCase() === email.toLowerCase());
+  if (custom) {
+    localStorage.setItem('currentUser', JSON.stringify(custom));
+    window.dispatchEvent(new Event('auth:changed'));
+    toast.success(`Signed in as ${custom.name} (${custom.role})`);
+    return { ok: true };
+  }
+  return { ok: false, reason: 'not_found' };
+};
+
+export const createAccountWithGoogle = (name: string, email: string) => {
+  const existsHard = findHardUserByEmail(email);
+  const customUsers = getCustomUsers();
+  const existsCustom = customUsers.find(u => u.email.toLowerCase() === email.toLowerCase());
+  if (existsHard || existsCustom) {
+    return signInWithGoogleEmail(email);
+  }
+  const imgId = Math.max(1, Math.min(70, Math.abs(hashCode(email)) % 70));
+  const newUser: BasicUser = {
+    name,
+    email,
+    photoUrl: `https://i.pravatar.cc/100?img=${imgId}`,
+    role: 'viewer',
+  };
+  const next = [...customUsers, newUser];
+  saveCustomUsers(next);
+  localStorage.setItem('currentUser', JSON.stringify(newUser));
+  window.dispatchEvent(new Event('auth:changed'));
+  toast.success(`Account created for ${name}`);
+  return { ok: true as const };
+};
+
+const hashCode = (str: string) => {
+  let h = 0;
+  for (let i = 0; i < str.length; i++) {
+    h = (h << 5) - h + str.charCodeAt(i);
+    h |= 0;
+  }
+  return h;
 };
 
 export const hardcodedUsers = HARD_USERS;
