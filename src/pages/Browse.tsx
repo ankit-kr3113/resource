@@ -101,6 +101,16 @@ const Browse = () => {
     { key: 'subjects', label: 'Subjects', icon: <FolderTree className="w-4 h-4" /> },
   ];
 
+  // Derived labels and counts for header
+  const branchName = branches.find(b => b.id === selectedBranch)?.name || '';
+  const semesterName = (semestersByBranch as any)[selectedBranch]?.find((s: any) => s.id === selectedSemester)?.name || '';
+  const subjectsMap = currentStep === 'subjects' ? getSubjects(selectedBranch, selectedSemester) : {} as any;
+  const allResourcesHeader = currentStep === 'subjects' ? Object.values(subjectsMap).flatMap((s: any) => s.resources || []) : [];
+  const totalHeader = allResourcesHeader.length;
+  const notesHeader = allResourcesHeader.filter((r: any) => r.type === 'Notes').length;
+  const pyqHeader = allResourcesHeader.filter((r: any) => r.type === 'PYQ').length;
+  const linksHeader = allResourcesHeader.filter((r: any) => r.type === 'External Link').length;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
       {/* Header */}
@@ -109,28 +119,40 @@ const Browse = () => {
           <div className="flex items-start justify-between gap-4">
             <div>
               <h1 className="text-3xl font-bold text-primary-foreground mb-2">Browse Resources</h1>
-              <p className="text-primary-foreground/85">Select your branch and semester to view subject-wise resources</p>
+              <p className="text-primary-foreground/85">
+                {currentStep === 'branch' && 'Select your branch'}
+                {currentStep === 'semester' && `Choose semester for ${branchName}`}
+                {currentStep === 'subjects' && `${semesterName} • ${Object.keys(subjectsMap).length} Subjects • ${totalHeader} Resources`}
+              </p>
 
-              {/* Breadcrumb Chips */}
+              {/* Breadcrumb Chips (clickable) */}
               <div className="flex flex-wrap items-center gap-2 mt-4">
-                <Badge variant="secondary" className="bg-primary-foreground/10 text-primary-foreground">Browse</Badge>
+                <Badge onClick={resetSelection} className="bg-primary-foreground/10 text-primary-foreground cursor-pointer hover:bg-primary-foreground/15">Browse</Badge>
                 {selectedBranch && (
                   <>
                     <ChevronRight className="w-4 h-4 text-primary-foreground/70" />
-                    <Badge variant="secondary" className="bg-primary-foreground/10 text-primary-foreground">
-                      {branches.find(b => b.id === selectedBranch)?.name}
+                    <Badge onClick={() => setCurrentStep('semester')} className="bg-primary-foreground/10 text-primary-foreground cursor-pointer hover:bg-primary-foreground/15">
+                      {branchName}
                     </Badge>
                   </>
                 )}
                 {selectedSemester && (
                   <>
                     <ChevronRight className="w-4 h-4 text-primary-foreground/70" />
-                    <Badge variant="secondary" className="bg-primary-foreground/10 text-primary-foreground">
-                      {semestersByBranch[selectedBranch as keyof typeof semestersByBranch]?.find(s => s.id === selectedSemester)?.name}
+                    <Badge onClick={() => setCurrentStep('subjects')} className="bg-primary-foreground/10 text-primary-foreground cursor-pointer hover:bg-primary-foreground/15">
+                      {semesterName}
                     </Badge>
                   </>
                 )}
               </div>
+
+              {currentStep === 'subjects' && (
+                <div className="flex items-center gap-2 mt-3">
+                  <Badge className="bg-blue-100 text-blue-800 border border-blue-200">Notes: {notesHeader}</Badge>
+                  <Badge className="bg-green-100 text-green-800 border border-green-200">PYQ: {pyqHeader}</Badge>
+                  <Badge className="bg-purple-100 text-purple-800 border border-purple-200">Links: {linksHeader}</Badge>
+                </div>
+              )}
             </div>
 
             <div className="hidden md:flex items-center gap-2">
@@ -157,38 +179,6 @@ const Browse = () => {
 
       {/* Content */}
       <div className="container mx-auto px-4 py-10">
-        {currentStep === 'subjects' && (
-          <section className="mb-8 text-center">
-            {(() => {
-              const subjects = getSubjects(selectedBranch, selectedSemester);
-              const allResources = Object.values(subjects).flatMap((s: any) => s.resources || []);
-              const total = allResources.length;
-              const notes = allResources.filter((r: any) => r.type === 'Notes').length;
-              const pyq = allResources.filter((r: any) => r.type === 'PYQ').length;
-              const links = allResources.filter((r: any) => r.type === 'External Link').length;
-              return (
-                <div>
-                  <h2 className="text-3xl font-bold mb-1">{branches.find(b => b.id === selectedBranch)?.name}</h2>
-                  <p className="text-muted-foreground">{semestersByBranch[selectedBranch as keyof typeof semestersByBranch]?.find(s => s.id === selectedSemester)?.name} • {Object.keys(subjects).length} Subjects • {total} Resources</p>
-                  <div className="flex items-center justify-center gap-2 mt-3">
-                    <Badge variant="secondary" className="bg-blue-100 text-blue-800 border border-blue-200">Notes: {notes}</Badge>
-                    <Badge variant="secondary" className="bg-green-100 text-green-800 border border-green-200">PYQ: {pyq}</Badge>
-                    <Badge variant="secondary" className="bg-purple-100 text-purple-800 border border-purple-200">Links: {links}</Badge>
-                  </div>
-                  {Object.keys(subjects).length > 0 && (
-                    <div className="flex flex-wrap gap-2 mt-4 justify-center">
-                      {Object.keys(subjects).map((key) => (
-                        <Button key={key} variant="outline" size="sm" onClick={() => document.getElementById(`subject-${key.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'')}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>
-                          {key}
-                        </Button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              );
-            })()}
-          </section>
-        )}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Sticky Stepper */}
           <aside className="lg:col-span-3">
