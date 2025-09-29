@@ -35,7 +35,11 @@ import { toast } from "@/components/ui/sonner";
 
  const BRANCHES = ["Civil", "Mechanical", "Electrical", "ECE", "CSE", "Other"] as const;
  const YEARS = ["1st Year", "2nd Year", "3rd Year", "4th Year"] as const;
- const CATEGORIES = ["Notes", "PYQ", "Other"] as const;
+ const SEMESTERS = [
+  "Semester 1","Semester 2","Semester 3","Semester 4","Semester 5",
+  "Semester 6","Semester 7","Semester 8","Semester 9","Semester 10"
+] as const;
+const CATEGORIES = ["Notes", "PYQ", "Other"] as const;
 
  const roleBadgeStyle = (role: Role) => {
   switch (role) {
@@ -382,7 +386,7 @@ import { toast } from "@/components/ui/sonner";
                             <TableRow>
                               <TableHead>Title</TableHead>
                               <TableHead>Branch</TableHead>
-                              <TableHead>Year</TableHead>
+                              <TableHead>Semester</TableHead>
                               <TableHead>Category</TableHead>
                               <TableHead>Status</TableHead>
                               <TableHead>Date</TableHead>
@@ -432,11 +436,11 @@ import { toast } from "@/components/ui/sonner";
                                                 </Select>
                                               </div>
                                               <div className="space-y-1.5">
-                                                <Label>Year</Label>
+                                                <Label>Semester</Label>
                                                 <Select value={editDraft?.year} onValueChange={(v)=> setEditDraft(d => d ? { ...d, year: v } : d)}>
-                                                  <SelectTrigger><SelectValue placeholder="Select year"/></SelectTrigger>
+                                                  <SelectTrigger><SelectValue placeholder="Select semester"/></SelectTrigger>
                                                   <SelectContent>
-                                                    {YEARS.map(y => (<SelectItem key={y} value={y}>{y}</SelectItem>))}
+                                                    {SEMESTERS.map(y => (<SelectItem key={y} value={y}>{y}</SelectItem>))}
                                                   </SelectContent>
                                                 </Select>
                                               </div>
@@ -495,7 +499,7 @@ import { toast } from "@/components/ui/sonner";
                             <TableRow>
                               <TableHead>Title</TableHead>
                               <TableHead>Branch</TableHead>
-                              <TableHead>Year</TableHead>
+                              <TableHead>Semester</TableHead>
                               <TableHead>Category</TableHead>
                               <TableHead>Uploader</TableHead>
                               <TableHead>Date</TableHead>
