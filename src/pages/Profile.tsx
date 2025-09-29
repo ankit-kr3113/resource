@@ -11,6 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Calendar, Crown, Download, LogOut, Pencil, Shield, ShieldCheck, ShieldQuestion, Star, Upload, User } from "lucide-react";
+import { signOut } from "@/lib/auth";
 
 // Types
  type Role = "viewer" | "contributor" | "admin" | "super-admin";
@@ -152,9 +153,6 @@ import { Calendar, Crown, Download, LogOut, Pencil, Shield, ShieldCheck, ShieldQ
     setEditDraft(null);
   };
 
-  // sign out
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const { signOut } = require("@/lib/auth");
 
   const RoleBadge = ({ r }: { r: Role }) => (
     <Badge className={`${roleBadgeStyle(r)} border`}>{roleIcon(r)}<span className="ml-1 capitalize">{r.replace("-", " ")}</span></Badge>
