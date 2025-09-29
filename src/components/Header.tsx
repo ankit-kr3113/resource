@@ -151,6 +151,7 @@ const Header = () => {
           )}
         </div>
       </div>
+      <GoogleAuthModal open={authOpen} onOpenChange={setAuthOpen} onSignedIn={() => navigate('/profile')} />
     </header>
   );
 };
