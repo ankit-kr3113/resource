@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useSearchParams, Link as RouterLink } from "react-router-dom";
+import { useSearchParams, Link as RouterLink, useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Calendar, Crown, Download, LogOut, Pencil, Shield, ShieldCheck, ShieldQuestion, Star, Upload, User } from "lucide-react";
-import { signOut } from "@/lib/auth";
+import { signOut, getCurrentUser } from "@/lib/auth";
 
 // Types
  type Role = "viewer" | "contributor" | "admin" | "super-admin";
@@ -57,6 +57,7 @@ import { signOut } from "@/lib/auth";
 
  const Profile = () => {
   const [params] = useSearchParams();
+  const navigate = useNavigate();
   const [name, setName] = useState("Guest User");
   const [email, setEmail] = useState("");
   const [photoUrl, setPhotoUrl] = useState("");
@@ -92,6 +93,27 @@ import { signOut } from "@/lib/auth";
 
     localStorage.setItem("currentUser", JSON.stringify(user));
   }, [params]);
+
+  // React to auth changes (e.g., sign out) and storage sync
+  useEffect(() => {
+    const handle = () => {
+      const u = getCurrentUser();
+      if (!u) {
+        navigate('/');
+        return;
+      }
+      setName(u.name || 'Guest User');
+      setEmail(u.email || '');
+      setPhotoUrl(u.photoUrl || '');
+      setRole((u.role as Role) || 'viewer');
+    };
+    window.addEventListener('auth:changed', handle as any);
+    window.addEventListener('storage', handle);
+    return () => {
+      window.removeEventListener('auth:changed', handle as any);
+      window.removeEventListener('storage', handle);
+    };
+  }, [navigate]);
 
   // Load preferences and stats
   useEffect(() => {
@@ -172,7 +194,7 @@ import { signOut } from "@/lib/auth";
               <p className="opacity-90">Manage your account, preferences, and activity.</p>
             </div>
             <div className="flex gap-2">
-              <Button variant="secondary" onClick={signOut}><LogOut className="w-4 h-4 mr-2"/>Sign out</Button>
+              <Button variant="secondary" onClick={() => { signOut(); navigate('/'); }}><LogOut className="w-4 h-4 mr-2"/>Sign out</Button>
             </div>
           </div>
         </div>
