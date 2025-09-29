@@ -265,7 +265,7 @@ const subjectData: Record<string, Record<string, Subject>> = {
     },
     'Physics': {
       name: 'Physics',
-      icon: '���',
+      icon: '⚡',
       description: 'Electromagnetic Theory, Optics, Modern Physics',
       resources: [
         { id: '67', title: 'Physics for Electronics', type: 'Notes', uploader: 'Physics ECE', views: 845, downloads: 367, uploadedAt: '2024-03-14' },
@@ -682,7 +682,7 @@ const SubjectResourceView = ({ branch, semester, branchName, semesterName, hideH
             <div className="flex items-center justify-center gap-2 mt-3">
               <Badge variant="secondary" className="bg-blue-100 text-blue-800 border border-blue-200">Notes: {notesCount}</Badge>
               <Badge variant="secondary" className="bg-green-100 text-green-800 border border-green-200">PYQ: {pyqCount}</Badge>
-              <Badge variant="secondary" className="bg-purple-100 text-purple-800 border border-purple-200">Links: {linkCount}</Badge>
+              <Badge variant="secondary" className="bg-purple-100 text-purple-800 border border-purple-200">Other Resources: {linkCount}</Badge>
             </div>
           </div>
 
