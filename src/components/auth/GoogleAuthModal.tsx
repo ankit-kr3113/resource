@@ -56,6 +56,8 @@ const GoogleAuthModal = ({ open, onOpenChange, onSignedIn }: GoogleAuthModalProp
     }
   };
 
+  const isDev = import.meta.env.MODE !== 'production';
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[420px]">
@@ -91,6 +93,18 @@ const GoogleAuthModal = ({ open, onOpenChange, onSignedIn }: GoogleAuthModalProp
             <div className="flex flex-col gap-2">
               <Button onClick={handleCreate} disabled={disabled}><UserPlus className="w-4 h-4 mr-2"/>Create account</Button>
               <Button variant="outline" onClick={()=> setStep('signin')}>Back</Button>
+            </div>
+          </div>
+        )}
+
+        {isDev && (
+          <div className="mt-6 border-t pt-4">
+            <div className="text-xs font-medium text-muted-foreground mb-2">Developer quick sign-in</div>
+            <div className="grid grid-cols-2 gap-2">
+              <Button variant="outline" size="sm" onClick={()=> { signIn('viewer'); onOpenChange(false); onSignedIn?.(); }}>Viewer</Button>
+              <Button variant="outline" size="sm" onClick={()=> { signIn('contributor'); onOpenChange(false); onSignedIn?.(); }}>Contributor</Button>
+              <Button variant="outline" size="sm" onClick={()=> { signIn('admin'); onOpenChange(false); onSignedIn?.(); }}>Admin</Button>
+              <Button variant="outline" size="sm" onClick={()=> { signIn('superAdmin'); onOpenChange(false); onSignedIn?.(); }}>Super-admin</Button>
             </div>
           </div>
         )}
