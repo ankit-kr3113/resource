@@ -152,10 +152,9 @@ import { Calendar, Crown, Download, LogOut, Pencil, Shield, ShieldCheck, ShieldQ
     setEditDraft(null);
   };
 
-  const signOut = () => {
-    localStorage.removeItem("currentUser");
-    window.location.href = "/";
-  };
+  // sign out
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { signOut } = require("@/lib/auth");
 
   const RoleBadge = ({ r }: { r: Role }) => (
     <Badge className={`${roleBadgeStyle(r)} border`}>{roleIcon(r)}<span className="ml-1 capitalize">{r.replace("-", " ")}</span></Badge>
