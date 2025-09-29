@@ -1,12 +1,17 @@
 import { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { BookOpen, Menu, Upload, User } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { getCurrentUser, signIn, signOut } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 4);
@@ -19,6 +24,18 @@ const Header = () => {
   useEffect(() => {
     setIsMenuOpen(false);
   }, [location.pathname]);
+
+  useEffect(() => {
+    const load = () => setCurrentUser(getCurrentUser());
+    load();
+    const onChange = () => load();
+    window.addEventListener('storage', onChange);
+    window.addEventListener('auth:changed', onChange as any);
+    return () => {
+      window.removeEventListener('storage', onChange);
+      window.removeEventListener('auth:changed', onChange as any);
+    };
+  }, []);
 
   const nav = [
     { label: "Home", to: "/" },
@@ -56,11 +73,40 @@ const Header = () => {
                 <Upload className="w-4 h-4 mr-2" /> Submit
               </Link>
             </Button>
-            <Button variant="secondary" size="sm" className="h-8 px-3" asChild>
-              <Link to="#">
-                <User className="w-4 h-4 mr-2" /> Sign In
-              </Link>
-            </Button>
+            {currentUser ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="secondary" size="sm" className="h-8 px-3">
+                    <Avatar className="w-5 h-5 mr-2"><AvatarFallback>{(currentUser?.name || 'U').slice(0,1).toUpperCase()}</AvatarFallback></Avatar>
+                    {currentUser?.name?.split(' ')[0] || 'Profile'}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel className="max-w-[220px]">
+                    <div className="font-medium truncate">{currentUser?.name}</div>
+                    <div className="text-xs text-muted-foreground truncate">{currentUser?.email || 'No email'}</div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate('/profile')}>Profile</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => { signOut(); navigate('/'); }}>Sign out</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="secondary" size="sm" className="h-8 px-3">
+                    <User className="w-4 h-4 mr-2" /> Sign In
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>Sign in as</DropdownMenuLabel>
+                  <DropdownMenuItem onClick={() => { signIn('viewer'); navigate('/profile'); }}>Viewer</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => { signIn('contributor'); navigate('/profile'); }}>Contributor</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => { signIn('admin'); navigate('/profile'); }}>Admin</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => { signIn('superAdmin'); navigate('/profile'); }}>Super-admin</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
         </div>
 

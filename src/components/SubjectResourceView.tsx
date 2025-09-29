@@ -660,7 +660,7 @@ const SubjectResourceView = ({ branch, semester, branchName, semesterName, hideH
     description: `${subjectName} • ${r.type}`,
     branch: branchName,
     year: semesterName,
-    category: r.type === 'PYQ' ? 'Previous Year Questions' : (r.type === 'External Link' ? 'External Links' : 'Notes'),
+    category: r.type === 'PYQ' ? 'Previous Year Questions' : (r.type === 'External Link' ? 'Other' : 'Notes'),
     tags: [subjectName, r.type],
     uploader: r.uploader,
     uploadedAt: r.uploadedAt,
@@ -728,7 +728,7 @@ const SubjectResourceView = ({ branch, semester, branchName, semesterName, hideH
                     <SelectItem value="all">All Types</SelectItem>
                     <SelectItem value="Notes">Notes</SelectItem>
                     <SelectItem value="PYQ">Previous Papers</SelectItem>
-                    <SelectItem value="External Link">External Links</SelectItem>
+                    <SelectItem value="External Link">Other</SelectItem>
                   </SelectContent>
                 </Select>
                 <Select value={sortBy} onValueChange={setSortBy}>
@@ -797,7 +797,7 @@ const SubjectResourceView = ({ branch, semester, branchName, semesterName, hideH
                   <TabsTrigger value="all">All ({subject.resources.length})</TabsTrigger>
                   <TabsTrigger value="Notes">Notes ({subject.resources.filter(r => r.type === 'Notes').length})</TabsTrigger>
                   <TabsTrigger value="PYQ">PYQs ({subject.resources.filter(r => r.type === 'PYQ').length})</TabsTrigger>
-                  <TabsTrigger value="External Link">Links ({subject.resources.filter(r => r.type === 'External Link').length})</TabsTrigger>
+                  <TabsTrigger value="External Link">Other ({subject.resources.filter(r => r.type === 'External Link').length})</TabsTrigger>
                 </TabsList>
 
                 {['all', 'Notes', 'PYQ', 'External Link'].map((tabType) => (

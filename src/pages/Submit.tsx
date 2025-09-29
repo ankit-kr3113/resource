@@ -24,7 +24,7 @@ const formSchema = z
     description: z.string().min(10, "Provide a short description").max(300, "Keep it concise"),
     branch: z.enum(["Civil", "Mechanical", "Electrical", "ECE", "CSE", "Other"], { required_error: "Please select a Branch" }),
     year: z.enum(["1st Year", "2nd Year", "3rd Year", "4th Year"], { required_error: "Please select an Academic Year" }),
-    category: z.enum(["PYQ", "Notes", "Link", "Other"], { required_error: "Please choose a category" }),
+    category: z.enum(["PYQ", "Notes", "Other"], { required_error: "Please choose a category" }),
     tags: z.array(z.string()).optional().default([]),
     resourceType: z.enum(["file", "link"], { required_error: "Choose Upload File or External Link" }),
     file: z
@@ -213,7 +213,7 @@ const Submit = () => {
                 <div className="space-y-2">
                   <Label>Category *</Label>
                   <RadioGroup className="grid grid-cols-2 md:grid-cols-4 gap-3" onValueChange={(v) => setValue("category", v as FormValues["category"], { shouldValidate: true })}>
-                    {(["PYQ", "Notes", "Link", "Other"] as const).map((c) => (
+                    {(["PYQ", "Notes", "Other"] as const).map((c) => (
                       <Label key={c} className="flex items-center gap-2 rounded-md border p-3 cursor-pointer hover:bg-accent">
                         <RadioGroupItem value={c} />
                         <span>{c}</span>
