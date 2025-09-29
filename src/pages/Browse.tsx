@@ -85,6 +85,7 @@ const Browse = () => {
     if (currentStep === 'subjects') {
       setCurrentStep('semester');
     } else if (currentStep === 'semester') {
+      setSelectedSemester('');
       setCurrentStep('branch');
     }
   };
@@ -128,15 +129,15 @@ const Browse = () => {
               {/* Breadcrumb Chips (clickable) */}
               <div className="flex flex-wrap items-center gap-2 mt-4">
                 <Badge onClick={resetSelection} className="bg-primary-foreground/10 text-primary-foreground cursor-pointer hover:bg-primary-foreground/15">Browse</Badge>
-                {selectedBranch && (
+                {currentStep !== 'branch' && (
                   <>
                     <ChevronRight className="w-4 h-4 text-primary-foreground/70" />
-                    <Badge onClick={() => setCurrentStep('semester')} className="bg-primary-foreground/10 text-primary-foreground cursor-pointer hover:bg-primary-foreground/15">
+                    <Badge onClick={() => { setSelectedSemester(''); setCurrentStep('semester'); }} className="bg-primary-foreground/10 text-primary-foreground cursor-pointer hover:bg-primary-foreground/15">
                       {branchName}
                     </Badge>
                   </>
                 )}
-                {selectedSemester && (
+                {currentStep === 'subjects' && (
                   <>
                     <ChevronRight className="w-4 h-4 text-primary-foreground/70" />
                     <Badge onClick={() => setCurrentStep('subjects')} className="bg-primary-foreground/10 text-primary-foreground cursor-pointer hover:bg-primary-foreground/15">
