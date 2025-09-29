@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "@/components/ui/sonner";
 import { CheckCircle2, FileText, Link as LinkIcon, Upload, X } from "lucide-react";
+import { getCurrentUser } from "@/lib/auth";
 
 const MAX_FILE_MB = 50;
 const ACCEPTED_EXT = [".pdf", ".docx", ".pptx"];
@@ -103,9 +104,45 @@ const Submit = () => {
   }, [resourceType, fileWatch]);
 
   const onSubmit = async (data: FormValues) => {
-    // Simulate API call
+    // Simulate API call / upload
     await new Promise((r) => setTimeout(r, 700));
-    toast.success("Submission received. Pending admin approval.");
+
+    // Persist submission to localStorage for admin moderation
+    const user = getCurrentUser() || {};
+    const uploaderEmail = user.email || "";
+    const newSubmission = {
+      id: `sub_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+      title: data.title,
+      branch: data.branch,
+      year: data.year,
+      category: data.category,
+      status: "Pending" as const,
+      date: new Date().toISOString(),
+      uploaderEmail,
+    };
+
+    try {
+      const raw = localStorage.getItem("submissions");
+      const arr = raw ? JSON.parse(raw) : [];
+      arr.push(newSubmission);
+      localStorage.setItem("submissions", JSON.stringify(arr));
+
+      // Increment contributor contributions stat if available
+      const statKey = `profile:stats:${uploaderEmail || "anon"}`;
+      const statsRaw = localStorage.getItem(statKey);
+      const stats = statsRaw ? JSON.parse(statsRaw) : { visits: 0, downloads: 0, contributions: 0 };
+      stats.contributions = (stats.contributions || 0) + 1;
+      localStorage.setItem(statKey, JSON.stringify(stats));
+
+      // Notify listeners in-app
+      window.dispatchEvent(new Event("submissions:changed"));
+
+      toast.success("Submission received. Pending admin approval.");
+    } catch (e) {
+      toast.error("Failed to save submission. Please try again.");
+      return;
+    }
+
     reset();
     setTags([]);
     setUploadProgress(0);
