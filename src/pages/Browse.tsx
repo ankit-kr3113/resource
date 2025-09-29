@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { ArrowLeft, BookOpen, GraduationCap, ChevronRight } from "lucide-react";
+import { ArrowLeft, BookOpen, GraduationCap, ChevronRight, FolderTree } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import SubjectResourceView from "@/components/SubjectResourceView";
+import SubjectResourceView, { getSubjects } from "@/components/SubjectResourceView";
 
 const Browse = () => {
   const [currentStep, setCurrentStep] = useState<'branch' | 'semester' | 'subjects'>('branch');
@@ -85,6 +85,7 @@ const Browse = () => {
     if (currentStep === 'subjects') {
       setCurrentStep('semester');
     } else if (currentStep === 'semester') {
+      setSelectedSemester('');
       setCurrentStep('branch');
     }
   };
@@ -95,140 +96,209 @@ const Browse = () => {
     setSelectedSemester('');
   };
 
+  const steps: { key: typeof currentStep; label: string; icon: JSX.Element }[] = [
+    { key: 'branch', label: 'Branch', icon: <GraduationCap className="w-4 h-4" /> },
+    { key: 'semester', label: 'Semester', icon: <BookOpen className="w-4 h-4" /> },
+    { key: 'subjects', label: 'Subjects', icon: <FolderTree className="w-4 h-4" /> },
+  ];
+
+  // Derived labels and counts for header
+  const branchName = branches.find(b => b.id === selectedBranch)?.name || '';
+  const semesterName = (semestersByBranch as any)[selectedBranch]?.find((s: any) => s.id === selectedSemester)?.name || '';
+  const subjectsMap = currentStep === 'subjects' ? getSubjects(selectedBranch, selectedSemester) : {} as any;
+  const allResourcesHeader = currentStep === 'subjects' ? Object.values(subjectsMap).flatMap((s: any) => s.resources || []) : [];
+  const totalHeader = allResourcesHeader.length;
+  const notesHeader = allResourcesHeader.filter((r: any) => r.type === 'Notes').length;
+  const pyqHeader = allResourcesHeader.filter((r: any) => r.type === 'PYQ').length;
+  const linksHeader = allResourcesHeader.filter((r: any) => r.type === 'External Link').length;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
-      {/* Page Header */}
-      <section className="bg-gradient-to-r from-primary to-primary/80 py-12">
+      {/* Header */}
+      <section className="bg-gradient-to-r from-primary to-primary/80 py-10">
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between gap-4">
             <div>
               <h1 className="text-3xl font-bold text-primary-foreground mb-2">Browse Resources</h1>
-              <p className="text-primary-foreground/80">Find study materials organized by branch, semester, and subjects</p>
+              <p className="text-primary-foreground/85">
+                {currentStep === 'branch' && 'Select your branch'}
+                {currentStep === 'semester' && `Choose semester for ${branchName}`}
+                {currentStep === 'subjects' && `${semesterName} • ${Object.keys(subjectsMap).length} Subjects • ${totalHeader} Resources`}
+              </p>
+
+              {/* Breadcrumb Chips (clickable) */}
+              <div className="flex flex-wrap items-center gap-2 mt-4">
+                <Badge onClick={resetSelection} className="bg-primary-foreground/10 text-primary-foreground cursor-pointer hover:bg-primary-foreground/15">Browse</Badge>
+                {currentStep !== 'branch' && (
+                  <>
+                    <ChevronRight className="w-4 h-4 text-primary-foreground/70" />
+                    <Badge onClick={() => { setSelectedSemester(''); setCurrentStep('semester'); }} className="bg-primary-foreground/10 text-primary-foreground cursor-pointer hover:bg-primary-foreground/15">
+                      {branchName}
+                    </Badge>
+                  </>
+                )}
+                {currentStep === 'subjects' && (
+                  <>
+                    <ChevronRight className="w-4 h-4 text-primary-foreground/70" />
+                    <Badge onClick={() => setCurrentStep('subjects')} className="bg-primary-foreground/10 text-primary-foreground cursor-pointer hover:bg-primary-foreground/15">
+                      {semesterName}
+                    </Badge>
+                  </>
+                )}
+              </div>
+
+              {currentStep === 'subjects' && (
+                <div className="flex items-center gap-2 mt-3">
+                  <Badge className="bg-blue-100 text-blue-800 border border-blue-200">Notes: {notesHeader}</Badge>
+                  <Badge className="bg-green-100 text-green-800 border border-green-200">PYQ: {pyqHeader}</Badge>
+                  <Badge className="bg-purple-100 text-purple-800 border border-purple-200">Other Resources: {linksHeader}</Badge>
+                </div>
+              )}
             </div>
-            
-            {/* Breadcrumb */}
-            <div className="hidden md:flex items-center gap-2 text-primary-foreground/80">
+
+            <div className="hidden md:flex items-center gap-2">
+              {currentStep !== 'branch' && (
+                <Button 
+                  variant="ghost" 
+                  onClick={handleBack}
+                  className="text-primary-foreground/90 hover:bg-primary-foreground/10"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" /> Back
+                </Button>
+              )}
               <Button 
-                variant="ghost" 
-                size="sm" 
+                variant="secondary" 
+                className="bg-primary-foreground text-primary hover:bg-primary-foreground/90"
                 onClick={resetSelection}
-                className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10"
               >
-                Browse
+                Reset
               </Button>
-              {selectedBranch && (
-                <>
-                  <ChevronRight className="w-4 h-4" />
-                  <span className="text-sm">{branches?.find(b => b.id === selectedBranch)?.name.split(' ')[0]}</span>
-                </>
-              )}
-              {selectedSemester && (
-                <>
-                  <ChevronRight className="w-4 h-4" />
-                  <span className="text-sm">{semestersByBranch[selectedBranch as keyof typeof semestersByBranch]?.find(s => s.id === selectedSemester)?.name}</span>
-                </>
-              )}
             </div>
           </div>
         </div>
       </section>
 
-      {/* Main Content */}
-      <div className="container mx-auto px-4 py-12">
-        {/* Back Button */}
-        {currentStep !== 'branch' && (
-          <Button 
-            variant="ghost" 
-            onClick={handleBack}
-            className="mb-8 hover:bg-muted transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
-          </Button>
-        )}
+      {/* Content */}
+      <div className="container mx-auto px-4 py-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {/* Sticky Stepper */}
+          <aside className="lg:col-span-3">
+            <div className="sticky top-28">
+              <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Progress</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ol className="space-y-3">
+                  {steps.map((s, i) => {
+                    const done = (currentStep === 'semester' && s.key === 'branch') || (currentStep === 'subjects' && (s.key === 'branch' || s.key === 'semester'));
+                    const active = currentStep === s.key;
+                    return (
+                      <li key={s.key} className={`flex items-center gap-3 rounded-lg px-3 py-2 border ${active ? 'border-primary bg-primary/5' : 'border-border bg-card'}`}>
+                        <div className={`flex items-center justify-center w-6 h-6 rounded-full text-xs ${done ? 'bg-green-500 text-white' : active ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground/70'}`}>{i + 1}</div>
+                        <div className="flex items-center gap-2 text-sm">
+                          {s.icon}
+                          <span className={active ? 'font-medium text-foreground' : 'text-muted-foreground'}>{s.label}</span>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ol>
+              </CardContent>
+            </Card>
+            </div>
+          </aside>
 
-        {/* Branch Selection */}
-        {currentStep === 'branch' && (
-          <div className="space-y-8">
-            <div className="text-center mb-12">
-              <div className="inline-flex items-center gap-2 mb-4">
-                <GraduationCap className="w-6 h-6 text-primary" />
-                <h2 className="text-2xl font-bold">Select Your Branch</h2>
+          {/* Main stage */}
+          <main className="lg:col-span-9 min-w-0">
+            {/* Back for mobile */}
+            {currentStep !== 'branch' && (
+              <Button 
+                variant="ghost" 
+                onClick={handleBack}
+                className="mb-6 lg:hidden hover:bg-muted"
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" /> Back
+              </Button>
+            )}
+
+            {/* Branch Selection */}
+            {currentStep === 'branch' && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-bold">Select Your Branch</h2>
+                  <span className="text-sm text-muted-foreground">{branches.length} options</span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {branches.map((branch) => (
+                    <Card 
+                      key={branch.id}
+                      className="group cursor-pointer border-2 border-transparent hover:border-primary/40 transition-all duration-200 hover:shadow-medium"
+                      onClick={() => handleBranchSelect(branch.id)}
+                    >
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-lg flex items-center gap-2">
+                          <GraduationCap className="w-5 h-5 text-primary" />
+                          {branch.name}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-muted-foreground mb-4 line-clamp-2">{branch.description}</p>
+                        <div className="flex items-center justify-between">
+                          <Badge variant="secondary" className="bg-primary/10 text-primary">6 Semesters</Badge>
+                          <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
               </div>
-              <p className="text-muted-foreground">Choose your engineering branch to explore semester-wise resources</p>
-            </div>
+            )}
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {branches.map((branch) => (
-                <Card 
-                  key={branch.id}
-                  className="cursor-pointer hover:shadow-medium transition-all duration-200 hover:scale-[1.02] border-2 hover:border-primary/50"
-                  onClick={() => handleBranchSelect(branch.id)}
-                >
-                  <CardHeader>
-                    <CardTitle className="text-lg text-primary">{branch.name}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground mb-4">{branch.description}</p>
-                    <div className="flex justify-between items-center">
-                      <Badge variant="secondary" className="bg-primary/10 text-primary">
-                        6 Semesters
-                      </Badge>
-                      <ChevronRight className="w-5 h-5 text-muted-foreground" />
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        )}
+            {/* Semester Selection */}
+            {currentStep === 'semester' && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-bold">Select Semester</h2>
+                  <span className="text-sm text-muted-foreground">
+                    {semestersByBranch[selectedBranch as keyof typeof semestersByBranch]?.length || 0} options
+                  </span>
+                </div>
 
-        {/* Semester Selection */}
-        {currentStep === 'semester' && (
-          <div className="space-y-8">
-            <div className="text-center mb-12">
-              <div className="inline-flex items-center gap-2 mb-4">
-                <BookOpen className="w-6 h-6 text-primary" />
-                <h2 className="text-2xl font-bold">Select Semester</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {semestersByBranch[selectedBranch as keyof typeof semestersByBranch]?.map((semester) => (
+                    <Card 
+                      key={semester.id}
+                      className="group cursor-pointer border-2 border-transparent hover:border-primary/40 transition-all duration-200 hover:shadow-medium"
+                      onClick={() => handleSemesterSelect(semester.id)}
+                    >
+                      <CardHeader className="text-center pb-3">
+                        <CardTitle className="text-xl text-primary">{semester.name}</CardTitle>
+                      </CardHeader>
+                      <CardContent className="text-center">
+                        <p className="text-sm text-muted-foreground line-clamp-2">{semester.description}</p>
+                        <div className="mt-4">
+                          <Badge variant="secondary" className="bg-primary/10 text-primary">Select</Badge>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
               </div>
-              <p className="text-muted-foreground">
-                Choose semester for {branches?.find(b => b.id === selectedBranch)?.name}
-              </p>
-            </div>
+            )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {semestersByBranch[selectedBranch as keyof typeof semestersByBranch]?.map((semester) => (
-                <Card 
-                  key={semester.id}
-                  className="cursor-pointer hover:shadow-medium transition-all duration-200 hover:scale-105 border-2 hover:border-primary/50"
-                  onClick={() => handleSemesterSelect(semester.id)}
-                >
-                  <CardHeader className="text-center pb-4">
-                    <CardTitle className="text-xl text-primary">{semester.name}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="text-center">
-                    <p className="text-sm text-muted-foreground">{semester.description}</p>
-                    <div className="mt-4">
-                      <Badge variant="secondary" className="bg-primary/10 text-primary">
-                        Select Semester
-                      </Badge>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Subject Resources View */}
-        {currentStep === 'subjects' && (
-          <SubjectResourceView 
-            branch={selectedBranch}
-            semester={selectedSemester}
-            branchName={branches?.find(b => b.id === selectedBranch)?.name || ''}
-            semesterName={semestersByBranch[selectedBranch as keyof typeof semestersByBranch]?.find(s => s.id === selectedSemester)?.name || ''}
-          />
-        )}
+            {/* Subject Resources */}
+            {currentStep === 'subjects' && (
+              <SubjectResourceView
+                branch={selectedBranch}
+                semester={selectedSemester}
+                branchName={branches.find(b => b.id === selectedBranch)?.name || ''}
+                semesterName={semestersByBranch[selectedBranch as keyof typeof semestersByBranch]?.find(s => s.id === selectedSemester)?.name || ''}
+                hideHeader
+              />
+            )}
+          </main>
+        </div>
       </div>
     </div>
   );
