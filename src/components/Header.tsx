@@ -93,20 +93,9 @@ const Header = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="secondary" size="sm" className="h-8 px-3">
-                    <User className="w-4 h-4 mr-2" /> Sign In
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>Sign in as</DropdownMenuLabel>
-                  <DropdownMenuItem onClick={() => { signIn('viewer'); navigate('/profile'); }}>Viewer</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => { signIn('contributor'); navigate('/profile'); }}>Contributor</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => { signIn('admin'); navigate('/profile'); }}>Admin</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => { signIn('superAdmin'); navigate('/profile'); }}>Super-admin</DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <Button variant="secondary" size="sm" className="h-8 px-3" onClick={() => setIsMenuOpen(false)} aria-haspopup="dialog" aria-expanded="true" id="open-google-auth">
+                <User className="w-4 h-4 mr-2" /> Sign In
+              </Button>
             )}
           </div>
         </div>
