@@ -160,7 +160,8 @@ const Browse = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Sticky Stepper */}
           <aside className="lg:col-span-3">
-            <Card className="sticky top-28">
+            <div className="sticky top-28">
+              <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-base">Progress</CardTitle>
               </CardHeader>
@@ -182,6 +183,7 @@ const Browse = () => {
                 </ol>
               </CardContent>
             </Card>
+            </div>
           </aside>
 
           {/* Main stage */}
