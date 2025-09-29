@@ -94,7 +94,7 @@ const Header = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Button variant="secondary" size="sm" className="h-8 px-3" onClick={() => setIsMenuOpen(false)} aria-haspopup="dialog" aria-expanded="true" id="open-google-auth">
+              <Button variant="secondary" size="sm" className="h-8 px-3" onClick={() => { setIsMenuOpen(false); setAuthOpen(true); }} aria-haspopup="dialog" aria-expanded={authOpen} id="open-google-auth">
                 <User className="w-4 h-4 mr-2" /> Sign In
               </Button>
             )}
