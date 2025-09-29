@@ -24,7 +24,10 @@ const formSchema = z
     title: z.string().min(3, "Title is required"),
     description: z.string().min(10, "Provide a short description").max(300, "Keep it concise"),
     branch: z.enum(["Civil", "Mechanical", "Electrical", "ECE", "CSE", "Other"], { required_error: "Please select a Branch" }),
-    year: z.enum(["1st Year", "2nd Year", "3rd Year", "4th Year"], { required_error: "Please select an Academic Year" }),
+    year: z.enum([
+      "Semester 1","Semester 2","Semester 3","Semester 4","Semester 5",
+      "Semester 6","Semester 7","Semester 8","Semester 9","Semester 10"
+    ], { required_error: "Please select a Semester" }),
     category: z.enum(["PYQ", "Notes", "Other"], { required_error: "Please choose a category" }),
     tags: z.array(z.string()).optional().default([]),
     resourceType: z.enum(["file", "link"], { required_error: "Choose Upload File or External Link" }),
@@ -230,16 +233,15 @@ const Submit = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Academic Year *</Label>
+                    <Label>Semester *</Label>
                     <Select onValueChange={(v) => setValue("year", v as FormValues["year"], { shouldValidate: true })}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select year" />
+                        <SelectValue placeholder="Select semester" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="1st Year">1st Year</SelectItem>
-                        <SelectItem value="2nd Year">2nd Year</SelectItem>
-                        <SelectItem value="3rd Year">3rd Year</SelectItem>
-                        <SelectItem value="4th Year">4th Year</SelectItem>
+                        {Array.from({ length: 10 }, (_, i) => `Semester ${i + 1}`).map((s) => (
+                          <SelectItem key={s} value={s}>{s}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     {errors.year && <p className="text-sm text-destructive">{errors.year.message}</p>}
