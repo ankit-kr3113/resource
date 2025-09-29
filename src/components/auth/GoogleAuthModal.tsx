@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { signInWithGoogleDefault, signInWithGoogleEmail, createAccountWithGoogle } from "@/lib/auth";
+import { signInWithGoogleDefault, signInWithGoogleEmail, createAccountWithGoogle, signIn } from "@/lib/auth";
 import { Mail, UserPlus } from "lucide-react";
 
 interface GoogleAuthModalProps {
