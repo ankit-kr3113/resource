@@ -3,7 +3,7 @@ import { ArrowLeft, BookOpen, GraduationCap, ChevronRight, FolderTree } from "lu
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import SubjectResourceView from "@/components/SubjectResourceView";
+import SubjectResourceView, { getSubjects } from "@/components/SubjectResourceView";
 
 const Browse = () => {
   const [currentStep, setCurrentStep] = useState<'branch' | 'semester' | 'subjects'>('branch');
@@ -157,6 +157,38 @@ const Browse = () => {
 
       {/* Content */}
       <div className="container mx-auto px-4 py-10">
+        {currentStep === 'subjects' && (
+          <section className="mb-8 text-center">
+            {(() => {
+              const subjects = getSubjects(selectedBranch, selectedSemester);
+              const allResources = Object.values(subjects).flatMap((s: any) => s.resources || []);
+              const total = allResources.length;
+              const notes = allResources.filter((r: any) => r.type === 'Notes').length;
+              const pyq = allResources.filter((r: any) => r.type === 'PYQ').length;
+              const links = allResources.filter((r: any) => r.type === 'External Link').length;
+              return (
+                <div>
+                  <h2 className="text-3xl font-bold mb-1">{branches.find(b => b.id === selectedBranch)?.name}</h2>
+                  <p className="text-muted-foreground">{semestersByBranch[selectedBranch as keyof typeof semestersByBranch]?.find(s => s.id === selectedSemester)?.name} • {Object.keys(subjects).length} Subjects • {total} Resources</p>
+                  <div className="flex items-center justify-center gap-2 mt-3">
+                    <Badge variant="secondary" className="bg-blue-100 text-blue-800 border border-blue-200">Notes: {notes}</Badge>
+                    <Badge variant="secondary" className="bg-green-100 text-green-800 border border-green-200">PYQ: {pyq}</Badge>
+                    <Badge variant="secondary" className="bg-purple-100 text-purple-800 border border-purple-200">Links: {links}</Badge>
+                  </div>
+                  {Object.keys(subjects).length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-4 justify-center">
+                      {Object.keys(subjects).map((key) => (
+                        <Button key={key} variant="outline" size="sm" onClick={() => document.getElementById(`subject-${key.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'')}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>
+                          {key}
+                        </Button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+          </section>
+        )}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Sticky Stepper */}
           <aside className="lg:col-span-3">
@@ -266,11 +298,12 @@ const Browse = () => {
 
             {/* Subject Resources */}
             {currentStep === 'subjects' && (
-              <SubjectResourceView 
+              <SubjectResourceView
                 branch={selectedBranch}
                 semester={selectedSemester}
                 branchName={branches.find(b => b.id === selectedBranch)?.name || ''}
                 semesterName={semestersByBranch[selectedBranch as keyof typeof semestersByBranch]?.find(s => s.id === selectedSemester)?.name || ''}
+                hideHeader
               />
             )}
           </main>
