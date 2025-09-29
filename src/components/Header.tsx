@@ -57,8 +57,8 @@ const Header = () => {
               </Link>
             </Button>
             <Button variant="secondary" size="sm" className="h-8 px-3" asChild>
-              <Link to="#">
-                <User className="w-4 h-4 mr-2" /> Sign In
+              <Link to="/profile">
+                <User className="w-4 h-4 mr-2" /> Profile
               </Link>
             </Button>
           </div>
