@@ -31,6 +31,7 @@ interface SubjectResourceViewProps {
   semester: string;
   branchName: string;
   semesterName: string;
+  hideHeader?: boolean;
 }
 
 // Comprehensive hardcoded sample data for all branches and semesters
@@ -264,7 +265,7 @@ const subjectData: Record<string, Record<string, Subject>> = {
     },
     'Physics': {
       name: 'Physics',
-      icon: '⚡',
+      icon: '���',
       description: 'Electromagnetic Theory, Optics, Modern Physics',
       resources: [
         { id: '67', title: 'Physics for Electronics', type: 'Notes', uploader: 'Physics ECE', views: 845, downloads: 367, uploadedAt: '2024-03-14' },
@@ -583,7 +584,7 @@ const subjectData: Record<string, Record<string, Subject>> = {
   }
 };
 
-const SubjectResourceView = ({ branch, semester, branchName, semesterName }: SubjectResourceViewProps) => {
+const SubjectResourceView = ({ branch, semester, branchName, semesterName, hideHeader = false }: SubjectResourceViewProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
@@ -670,33 +671,37 @@ const SubjectResourceView = ({ branch, semester, branchName, semesterName }: Sub
 
   return (
     <div className="space-y-8">
-      {/* Header */}
-      <div className="text-center">
-        <h2 className="text-3xl font-bold mb-2">{branchName}</h2>
-        <p className="text-muted-foreground">
-          {semesterName} • {Object.keys(subjects).length} Subjects • {totalResources} Resources
-        </p>
-        <div className="flex items-center justify-center gap-2 mt-3">
-          <Badge variant="secondary" className="bg-blue-100 text-blue-800 border border-blue-200">Notes: {notesCount}</Badge>
-          <Badge variant="secondary" className="bg-green-100 text-green-800 border border-green-200">PYQ: {pyqCount}</Badge>
-          <Badge variant="secondary" className="bg-purple-100 text-purple-800 border border-purple-200">Links: {linkCount}</Badge>
-        </div>
-      </div>
+      {!hideHeader && (
+        <>
+          {/* Header */}
+          <div className="text-center">
+            <h2 className="text-3xl font-bold mb-2">{branchName}</h2>
+            <p className="text-muted-foreground">
+              {semesterName} • {Object.keys(subjects).length} Subjects • {totalResources} Resources
+            </p>
+            <div className="flex items-center justify-center gap-2 mt-3">
+              <Badge variant="secondary" className="bg-blue-100 text-blue-800 border border-blue-200">Notes: {notesCount}</Badge>
+              <Badge variant="secondary" className="bg-green-100 text-green-800 border border-green-200">PYQ: {pyqCount}</Badge>
+              <Badge variant="secondary" className="bg-purple-100 text-purple-800 border border-purple-200">Links: {linkCount}</Badge>
+            </div>
+          </div>
 
-      {/* Quick Subject Nav */}
-      {Object.keys(subjects).length > 0 && (
-        <div className="flex flex-wrap gap-2 mt-4">
-          {Object.keys(subjects).map((key) => (
-            <Button
-              key={key}
-              variant="outline"
-              size="sm"
-              onClick={() => document.getElementById(`subject-${slugify(key)}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-            >
-              {key}
-            </Button>
-          ))}
-        </div>
+          {/* Quick Subject Nav */}
+          {Object.keys(subjects).length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-4">
+              {Object.keys(subjects).map((key) => (
+                <Button
+                  key={key}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => document.getElementById(`subject-${slugify(key)}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                >
+                  {key}
+                </Button>
+              ))}
+            </div>
+          )}
+        </>
       )}
 
       {/* Search and Filters */}
@@ -857,3 +862,8 @@ const SubjectResourceView = ({ branch, semester, branchName, semesterName }: Sub
 };
 
 export default SubjectResourceView;
+
+export const getSubjects = (branch: string, semester: string) => {
+  const key = `${branch}-${semester}` as keyof typeof subjectData;
+  return subjectData[key] || {};
+};
